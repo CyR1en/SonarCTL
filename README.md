@@ -6,7 +6,7 @@ control your SteelSeries sonar slider with a midi controller.
 ### How to use
 
 1. Make sure that you have a SonarCTL MIDI controller.
-    - If you don't have one, you can build one by following the instructions in the [SonarCTL MIDI repository]()
+    - If you don't have one, you can build one by following the instructions in the [SonarCTL Firmware repository](https://github.com/CyR1en/SonarCTL-Firmware)
 2. Connect your SonarCTL MIDI controller to your computer.
 3. Make sure you have 3.6 < Python < 3.12 installed on your computer.
 4. Clone this repository.
