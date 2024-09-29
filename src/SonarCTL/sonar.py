@@ -3,17 +3,18 @@ import json
 import time
 import rtmidi
 from steelseries_sonar_py import Sonar
-from src.SonarCTL.logger import Logger
-
 
 class SonarMidiListener:
-    def __init__(self, core_props_path, status_callback=None, channel_mappings=None, logger=None):
+    def __init__(self, core_props_path, status_callback=None, channel_mappings=None, logger=None, toggle_buttons=None,
+                 slider_widget=None):
         self.logger = logger
-        print(core_props_path)
         self.sonar = Sonar(core_props_path)
         self.midi_in = rtmidi.MidiIn()
+        self.midi_out = rtmidi.MidiOut()  # Add MidiOut instance
         self.channel_mappings = channel_mappings or {}
+        self.toggle_buttons = toggle_buttons or []
         self.status_callback = status_callback
+        self.slider_widget = slider_widget
 
     def midi_callback(self, message, data=None):
         msg, time_delta = message
@@ -27,17 +28,34 @@ class SonarMidiListener:
                 channel = mapped_channel.lower()
                 volume = round(volume, 2)
                 self.logger.log(f"Setting volume for {channel} to {volume}")
+                channel = "chatRender" if channel == "chat" else "chatCapture" if channel == "mic" else channel
+
+                button_index = control - 1
+                if 0 <= button_index < len(self.toggle_buttons):
+                    button_state = self.toggle_buttons[button_index].text()
+                    slider = "streaming" if button_state == "S" else "monitoring"
+                else:
+                    slider = "monitoring"
+
                 try:
-                    result = self.sonar.set_volume(channel, volume, streamer_slider="monitoring")
+                    self.logger.log(f"Setting volume for {channel} to {volume} using slider {slider}")
+                    result = self.sonar.set_volume(channel, volume, streamer_slider=slider)
                     self.logger.log(result)
                 except Exception as e:
                     self.logger.log(e)
+
+                if self.slider_widget:
+                    self.slider_widget.update_slider(button_index, int(volume * 100))
+                    self.slider_widget.update_slider_values(
+                        [int(volume * 100) if i == button_index else slider.value() for i, (slider, _) in
+                         enumerate(self.slider_widget.sliders)])
 
     def open_sonar_ctl_midi_port(self, available_ports):
         for i, port in enumerate(available_ports):
             if "SonarCTL" in port:
                 self.midi_in.open_port(i)
-                if self.midi_in.is_port_open():
+                self.midi_out.open_port(i)  # Open the same port for MidiOut
+                if self.midi_in.is_port_open() and self.midi_out.is_port_open():
                     self.logger.log(f'Opened MIDI port "{port}"')
                     return True
         return False
@@ -51,6 +69,7 @@ class SonarMidiListener:
                 self.logger.log(f'Set callback for MIDI port "{available_ports[0]}"')
                 if self.status_callback:
                     self.status_callback(True)  # Notify connection status
+                self.send_midi_message(0xB0, 0x00, 0x7F)  # Send request message after port is open
                 return True
             else:
                 self.logger.log("Failed to open MIDI port.")
@@ -62,6 +81,14 @@ class SonarMidiListener:
             if self.status_callback:
                 self.status_callback(False)  # Notify connection status
             return False
+
+    def send_midi_message(self, status, control, value):
+        message = [status, control, value]
+        if self.midi_out.is_port_open():
+            self.midi_out.send_message(message)
+            self.logger.log(f"Sent MIDI message: {message}")
+        else:
+            self.logger.log("MIDI Out port is not open. Cannot send message.")
 
     @staticmethod
     def map_midi(value, in_min, in_max, out_min=0.0, out_max=1.0):
@@ -75,14 +102,19 @@ class SonarMidiListener:
                 if not midi_connected or self.midi_in.get_port_count() == 0:
                     self.logger.log("MIDI connection lost. Attempting to reconnect...")
                     self.midi_in.close_port()
+                    self.midi_out.close_port()  # Close MidiOut port
                     midi_connected = self.open_midi_port()
+                    if not midi_connected and self.status_callback:
+                        self.status_callback(False)  # Notify disconnection status
                 time.sleep(2)
         except KeyboardInterrupt:
             pass
         finally:
             self.midi_in.close_port()
+            self.midi_out.close_port()  # Close MidiOut port
             if self.status_callback:
                 self.status_callback(False)  # Notify disconnection status
 
-    def start(self):
-        self.midi_monitor()
+    def on_midi_value_change(self, values):
+        # This method should be called whenever MIDI values change
+        self.slider_widget.update_slider_values(values)
