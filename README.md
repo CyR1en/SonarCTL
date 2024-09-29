@@ -1,36 +1,60 @@
 # SonarCTL Software
 
-This is a software that communicates with a custom midi controller. The main purpose of this app is to allow you to
-control your SteelSeries sonar slider with a midi controller.
+This software allows you to control your SteelSeries Sonar slider with a custom MIDI controller.
 
-### How to use
+## How to Use
 
-1. Make sure that you have a SonarCTL MIDI controller.
-    - If you don't have one, you can build one by following the instructions in the [SonarCTL Firmware repository](https://github.com/CyR1en/SonarCTL-Firmware)
-2. Connect your SonarCTL MIDI controller to your computer.
-3. Make sure you have 3.6 < Python < 3.12 installed on your computer.
-4. Clone this repository.
-5. Initialize the virtual environment by running:
+1. **Ensure you have a SonarCTL MIDI controller**:
+    - If you don't have one, you can build one by following the instructions in the [SonarCTL Firmware repository](https://github.com/CyR1en/SonarCTL-Firmware).
+
+2. **Connect your SonarCTL MIDI controller to your computer**.
+
+3. **Install Python**:
+    - Ensure you have Python version between 3.6 and 3.12 installed on your computer.
+
+4. **Clone this repository**:
+    ```shell
+    git clone https://github.com/CyR1en/SonarCTL.git
+    cd SonarCTL
+    ```
+
+5. **Initialize the virtual environment**:
     ```shell
     python -m venv venv
     ```
-6. Activate the virtual environment:
-    - Windows:
+
+6. **Activate the virtual environment**:
+    - **Windows**:
         ```shell
         .\venv\Scripts\Activate
         ```
-    - Linux:
+    - **Linux**:
         ```shell
         source venv/bin/activate
         ```
-7. Install the dependencies:
+
+7. **Install the dependencies**:
     ```shell
     pip install -r requirements.txt
     ```
-8. Run the app:
+
+8. **Run the app**:
     ```shell
-   pythonw -m src.SonarlCTL
+    pythonw -m src.SonarCTL
     ```
-   
-### Attribution
-This uses [Mark788k's steelseries-sonar-py](https://github.com/Mark7888/steelseries-sonar-py) library to communicate with the SteelSeries Sonar.
+
+## Screenshots
+
+### Configuration Screen
+![Configuration Screen](docs/images/ConfigView.png)
+
+### Console Screen
+![Console Screen](docs/images/ConsoleView.png)
+
+### Slider Screen
+![Slider Screen](docs/images/SliderView.png)
+
+## Attribution
+
+This software uses [Mark788k's steelseries-sonar-py](https://github.com/Mark7888/steelseries-sonar-py) library to communicate with the SteelSeries Sonar.
+This software allows you to control your SteelSeries Sonar slider with a custom MIDI controller.
