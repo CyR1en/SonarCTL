@@ -2,7 +2,7 @@
 
 This software allows you to control your SteelSeries Sonar slider with a custom MIDI controller.
 
-## How to Use
+## Run from source
 
 1. **Ensure you have a SonarCTL MIDI controller**:
     - If you don't have one, you can build one by following the instructions in the [SonarCTL Firmware repository](https://github.com/CyR1en/SonarCTL-Firmware).
@@ -42,6 +42,27 @@ This software allows you to control your SteelSeries Sonar slider with a custom 
     ```shell
     pythonw -m src.SonarCTL
     ```
+
+## Build and Install
+
+You can download the installer from the release section of GitHub. If you want to build it yourself, the steps are:
+
+1. **Make a virtual environment**:
+    ```shell
+    python -m venv venv
+    ```
+
+2. **Install dependencies from `requirements.txt`**:
+    ```shell
+    pip install -r requirements.txt
+    ```
+
+3. **Build the application using PyInstaller**:
+    ```shell
+    pyinstaller --noconfirm sonarctl.spec
+    ```
+
+4. **Install InstallForge, open the `.ifp` file, and click build**.
 
 ## Screenshots
 
