@@ -3,10 +3,13 @@ import os
 import json
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QComboBox, QFileDialog, QLineEdit
 from PySide6.QtCore import Qt, QStandardPaths
+from importlib_metadata.diagnose import inspect
+
 
 class ConfigWidget(QWidget):
     DEFAULT_PATH = "C:\\ProgramData\\SteelSeries\\SteelSeries Engine 3\\coreProps.json"
-    CONFIG_FILE = os.path.join(QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppLocalDataLocation), "SonarCTL", "config.json")
+    CONFIG_FILE = os.path.join(QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppLocalDataLocation),
+                               "SonarCTL", "config.json")
 
     def __init__(self, main_window):
         super().__init__()
@@ -26,11 +29,13 @@ class ConfigWidget(QWidget):
 
     def setup_path_selector(self, layout):
         path_layout = QVBoxLayout()
+        path_layout.setSpacing(5)
         self.path_label = QLabel("coreProps.json")
         self.path_label.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.path_field = QLineEdit()
         self.path_field.setReadOnly(True)
         self.path_field.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.path_field.setAlignment(Qt.AlignmentFlag.AlignLeft)
         self.path_button = QPushButton("Browse")
         self.path_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.path_button.clicked.connect(self.open_file_dialog)
@@ -42,6 +47,7 @@ class ConfigWidget(QWidget):
 
         if os.path.exists(self.DEFAULT_PATH):
             self.path_field.setText(self.DEFAULT_PATH)
+            self.path_field.setCursorPosition(0)
             self.path_button.hide()
         else:
             self.path_field.setText("Path to coreProps.json: Not Found")
@@ -61,6 +67,7 @@ class ConfigWidget(QWidget):
             channel_selector.addItems(self.channels)
             channel_selector.setCurrentText("None")
             channel_selector.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+            channel_selector.setStyleSheet("QComboBox:focus { border: none; }")
             channel_selector.currentIndexChanged.connect(self.update_channel_options)
             channel_selector.currentIndexChanged.connect(self.save_config)
             self.channel_selectors.append(channel_selector)
@@ -70,6 +77,7 @@ class ConfigWidget(QWidget):
             toggle_button.setFixedSize(26, 26)
             toggle_button.setStyleSheet("margin-top: 0px; font-size: 11px;")
             toggle_button.clicked.connect(self.create_toggle_button_handler(toggle_button))
+            toggle_button.clicked.connect(self.save_config)
             self.toggle_buttons.append(toggle_button)
 
             channel_layout.addWidget(channel_label)
@@ -79,13 +87,13 @@ class ConfigWidget(QWidget):
 
         layout.addLayout(self.channels_layout)
 
-    def create_toggle_button_handler(self, button):
+    @staticmethod
+    def create_toggle_button_handler(button):
         def toggle_button():
             if button.text() == "M":
                 button.setText("S")
             else:
                 button.setText("M")
-            self.save_config()
 
         return toggle_button
 
@@ -99,7 +107,7 @@ class ConfigWidget(QWidget):
 
     def update_channel_options(self):
         selected_options = [selector.currentText() for selector in self.channel_selectors]
-        for selector in self.channel_selectors:
+        for i, selector in enumerate(self.channel_selectors):
             current_text = selector.currentText()
             selector.blockSignals(True)
             selector.clear()
@@ -109,12 +117,20 @@ class ConfigWidget(QWidget):
             selector.addItems(options)
             selector.setCurrentText(current_text)
             selector.blockSignals(False)
+
+            # Disable the toggle button if the selected option is "Chat Mix"
+            if current_text == "Chat Mix":
+                self.toggle_buttons[i].setEnabled(False)
+            else:
+                self.toggle_buttons[i].setEnabled(True)
+
         self.update_sonar_midi_listener_channels()
         self.update_slider_labels()
 
     def update_sonar_midi_listener_channels(self):
         if hasattr(self, 'sonar_midi_listener'):
-            self.sonar_midi_listener.channel_mappings = {f"channel_{i + 1}": selector.currentText() for i, selector in enumerate(self.channel_selectors)}
+            self.sonar_midi_listener.channel_mappings = {f"channel_{i + 1}": selector.currentText() for i, selector in
+                                                         enumerate(self.channel_selectors)}
 
     def update_slider_labels(self):
         labels = [selector.currentText() for selector in self.channel_selectors]
@@ -133,10 +149,10 @@ class ConfigWidget(QWidget):
         if os.path.exists(self.CONFIG_FILE):
             with open(self.CONFIG_FILE, 'r') as f:
                 config = json.load(f)
-                for selector, value in zip(self.channel_selectors, config.get("channels", [])):
-                    selector.setCurrentText(value)
                 for button, state in zip(self.toggle_buttons, config.get("toggle_states", [])):
                     button.setText(state)
+                for selector, value in zip(self.channel_selectors, config.get("channels", [])):
+                    selector.setCurrentText(value)
             self.update_slider_labels()
 
     def get_channel_mappings(self):

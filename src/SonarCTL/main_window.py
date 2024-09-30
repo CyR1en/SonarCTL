@@ -1,7 +1,10 @@
 # src/SonarCTL/main_window.py
+import os
+import sys
 import threading
 
-from PySide6.QtWidgets import QMainWindow, QSystemTrayIcon, QMenu, QApplication, QHBoxLayout, QVBoxLayout, QWidget, QStackedWidget, QLabel
+from PySide6.QtWidgets import QMainWindow, QSystemTrayIcon, QMenu, QApplication, QHBoxLayout, QVBoxLayout, QWidget, \
+    QStackedWidget, QLabel
 from PySide6.QtGui import QIcon, QAction
 
 from src.SonarCTL.logger import Logger
@@ -12,6 +15,7 @@ from src.SonarCTL.widgets.config import ConfigWidget
 from src.SonarCTL.widgets.sliders import SliderWidget
 from src.SonarCTL.widgets.status_bar import StatusBar  # Import StatusDot
 
+
 class MainWindow(QMainWindow):
     WINDOW_WIDTH = 400
     WINDOW_HEIGHT = 300
@@ -19,8 +23,6 @@ class MainWindow(QMainWindow):
     def __init__(self, icon_path):
         super().__init__()
         self.logger = Logger()
-
-
 
         self.setWindowTitle("SonarCTL")
         screen_width = QApplication.primaryScreen().size().width()
@@ -76,18 +78,24 @@ class MainWindow(QMainWindow):
         self.tray_icon = QSystemTrayIcon(self)
         if not QIcon(icon_path).isNull():
             self.tray_icon.setIcon(QIcon(icon_path))
+            self.tray_icon.setToolTip("SonarCTL")
         else:
             print(f"Error: Icon not found at {icon_path}")
 
         tray_menu = QMenu()
         open_action = QAction("Open", self)
         quit_action = QAction("Quit", self)
+        self.launch_on_startup_action = QAction("Launch on startup", self)
+        self.launch_on_startup_action.setCheckable(True)
+        self.launch_on_startup_action.setChecked(False)
+        self.launch_on_startup_action.triggered.connect(self.toggle_launch_on_startup)
 
         open_action.triggered.connect(self.show_window)
         quit_action.triggered.connect(self.quit_app)
 
         tray_menu.addAction(open_action)
         tray_menu.addAction(quit_action)
+        tray_menu.addAction(self.launch_on_startup_action)
 
         self.tray_icon.setContextMenu(tray_menu)
 
@@ -108,6 +116,31 @@ class MainWindow(QMainWindow):
         )
         threading.Thread(target=self.sonar_midi_listener.midi_monitor, daemon=True).start()
 
+    def toggle_launch_on_startup(self):
+        if self.launch_on_startup_action.isChecked():
+            self.enable_launch_on_startup()
+        else:
+            self.disable_launch_on_startup()
+
+    @staticmethod
+    def enable_launch_on_startup():
+        # Platform-specific code to enable launch on startup
+        if os.name == 'nt':  # Windows
+            import winreg as reg
+            key = reg.HKEY_CURRENT_USER
+            key_value = r'Software\Microsoft\Windows\CurrentVersion\Run'
+            with reg.OpenKey(key, key_value, 0, reg.KEY_ALL_ACCESS) as key:
+                reg.SetValueEx(key, "SonarCTL", 0, reg.REG_SZ, sys.executable)
+
+    @staticmethod
+    def disable_launch_on_startup():
+        # Platform-specific code to disable launch on startup
+        if os.name == 'nt':  # Windows
+            import winreg as reg
+            key = reg.HKEY_CURRENT_USER
+            key_value = r'Software\Microsoft\Windows\CurrentVersion\Run'
+            with reg.OpenKey(key, key_value, 0, reg.KEY_ALL_ACCESS) as key:
+                reg.DeleteValue(key, "SonarCTL")
 
     def closeEvent(self, event):
         event.ignore()

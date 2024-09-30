@@ -1,9 +1,19 @@
 # src/SonarCTL/widgets/sidebar.py
+import os
+
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton
 from PySide6.QtGui import QIcon, QDesktopServices
 from PySide6.QtCore import Qt, QSize, QUrl
+from src.SonarCTL.utils import base_path
+
 
 class Sidebar(QWidget):
+    assets_path = os.path.join(base_path, "assets")
+    icon_setting_path = os.path.join(assets_path, "setting.png")
+    icon_terminal_path = os.path.join(assets_path, "terminal.png")
+    icon_mixer_path = os.path.join(assets_path, 'mixer.png')
+    icon_github_path = os.path.join(assets_path, 'github.png')
+
     def __init__(self, main_window):
         super().__init__()
         self.main_window = main_window
@@ -17,18 +27,18 @@ class Sidebar(QWidget):
         layout.setContentsMargins(0, 10, 0, 10)
         layout.setSpacing(10)
 
-        button1 = self.create_button("assets/icon/setting.png", 24, 32, self.main_window.switch_to_config_widget)
+        button1 = self.create_button(self.icon_setting_path, 24, 32, self.main_window.switch_to_config_widget)
         layout.addWidget(button1, alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
 
-        button2 = self.create_button("assets/icon/terminal.png", 20, 32, self.main_window.switch_to_console_widget)
+        button2 = self.create_button(self.icon_terminal_path, 20, 32, self.main_window.switch_to_console_widget)
         layout.addWidget(button2, alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
 
-        button3 = self.create_button("assets/icon/mixer.png", 24, 32, self.main_window.switch_to_slider_widget)
+        button3 = self.create_button(self.icon_mixer_path, 24, 32, self.main_window.switch_to_slider_widget)
         layout.addWidget(button3, alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
 
         layout.addStretch()
 
-        source = self.create_button("assets/icon/github.png", 24, 32, self.on_source_clicked)
+        source = self.create_button(self.icon_github_path, 24, 32, self.on_source_clicked)
         layout.addWidget(source, alignment=Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignHCenter)
 
         self.setLayout(layout)

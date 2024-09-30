@@ -4,6 +4,7 @@ import time
 import rtmidi
 from steelseries_sonar_py import Sonar
 
+
 class SonarMidiListener:
     def __init__(self, core_props_path, status_callback=None, channel_mappings=None, logger=None, toggle_buttons=None,
                  slider_widget=None):
@@ -21,15 +22,11 @@ class SonarMidiListener:
         status, control, value = msg[0], msg[1], msg[2]
         if (status & 0xF0) == 0xB0:
             self.logger.log(f"Control Change: Control {control}, Value {value}")
-            volume = self.map_midi(value, 0, 127, 0.0, 1.0)
-            self.logger.log(f"Volume: {volume}")
+
             mapped_channel = self.channel_mappings.get(f"channel_{control}")
             if mapped_channel and mapped_channel != "None":
                 channel = mapped_channel.lower()
-                volume = round(volume, 2)
-                self.logger.log(f"Setting volume for {channel} to {volume}")
                 channel = "chatRender" if channel == "chat" else "chatCapture" if channel == "mic" else channel
-
                 button_index = control - 1
                 if 0 <= button_index < len(self.toggle_buttons):
                     button_state = self.toggle_buttons[button_index].text()
@@ -38,8 +35,14 @@ class SonarMidiListener:
                     slider = "monitoring"
 
                 try:
-                    self.logger.log(f"Setting volume for {channel} to {volume} using slider {slider}")
-                    result = self.sonar.set_volume(channel, volume, streamer_slider=slider)
+                    if channel == "chat mix":
+                        chat_mix_value = round(self.map_midi(value, 0, 127, -1.0, 1.0), 2)
+                        self.logger.log(f"Setting chat mix to {chat_mix_value}")
+                        result = self.sonar.set_chat_mix(chat_mix_value)
+                    else:
+                        volume = round(self.map_midi(value, 0, 127, 0.0, 1.0), 2)
+                        self.logger.log(f"Setting volume for {channel} to {volume} using slider {slider}")
+                        result = self.sonar.set_volume(channel, volume, streamer_slider=slider)
                     self.logger.log(result)
                 except Exception as e:
                     self.logger.log(e)

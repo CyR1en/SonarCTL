@@ -1,0 +1,19 @@
+# Ignore build and dist folders
+build/
+dist/
+
+# Ignore JetBrains project files
+.idea/
+*.iml
+out/
+
+# Ignore Python bytecode files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Ignore virtual environments
+venv/
+ENV/
+env/
+.venv/
