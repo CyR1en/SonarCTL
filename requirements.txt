@@ -4,3 +4,4 @@ pillow~=10.4.0
 python-rtmidi~=1.5.8
 steelseries-sonar-py~=1.2.0
 PySide6~=6.7.2
+pyinstaller~=6.10.0
