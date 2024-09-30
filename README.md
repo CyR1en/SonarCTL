@@ -2,53 +2,59 @@
 
 This software allows you to control your SteelSeries Sonar slider with a custom MIDI controller.
 
+Config View                       |  Console View                     |  Slider Preview View
+:--------------------------------:|:---------------------------------:|:--------------------------------:
+![](docs/images/ConfigView.png)   |  ![](docs/images/ConsoleView.png) | ![](docs/images/SliderView.png)
+
+## Hardware requirement
+
+To use this software, you must build your own SonarCTL MIDI controller. The materials needed and the steps can be found in this repository: [SonarCTL Firmware](https://github.com/CyR1en/SonarCTL-Firmware).
+
 ## Run from source
 
-1. **Ensure you have a SonarCTL MIDI controller**:
-    - If you don't have one, you can build one by following the instructions in the [SonarCTL Firmware repository](https://github.com/CyR1en/SonarCTL-Firmware).
+You can run this software directly from the source. You can do this by following steps:
 
-2. **Connect your SonarCTL MIDI controller to your computer**.
-
-3. **Install Python**:
+1. **Install Python**:
     - Ensure you have Python version between 3.6 and 3.12 installed on your computer.
 
-4. **Clone this repository**:
-    ```shell
+2. **Clone this repository**:
+    ```
     git clone https://github.com/CyR1en/SonarCTL.git
     cd SonarCTL
     ```
 
-5. **Initialize the virtual environment**:
-    ```shell
+3. **Initialize the virtual environment**:
+    ```
     python -m venv venv
     ```
 
-6. **Activate the virtual environment**:
+4. **Activate the virtual environment**:
     - **Windows**:
-        ```shell
+        ```
         .\venv\Scripts\Activate
         ```
     - **Linux**:
-        ```shell
+        ```
         source venv/bin/activate
         ```
 
-7. **Install the dependencies**:
-    ```shell
+5. **Install the dependencies**:
+    ```
     pip install -r requirements.txt
     ```
 
-8. **Run the app**:
-    ```shell
+6. **Run the app**:
+    ```
     pythonw -m src.SonarCTL
     ```
 
 ## Build and Install
 
-You can download the installer from the release section of GitHub. If you want to build it yourself, the steps are:
+If you do not want to run the program from the source, you can download the installer from the [release section](https://github.com/CyR1en/SonarCTL/releases). 
+If you want to build it yourself, the steps are:
 
 1. **Make a virtual environment**:
-    ```shell
+    ```
     python -m venv venv
     ```
 
@@ -63,17 +69,6 @@ You can download the installer from the release section of GitHub. If you want t
     ```
 
 4. **Install InstallForge, open the `.ifp` file, and click build**.
-
-## Screenshots
-
-### Configuration Screen
-![Configuration Screen](docs/images/ConfigView.png)
-
-### Console Screen
-![Console Screen](docs/images/ConsoleView.png)
-
-### Slider Screen
-![Slider Screen](docs/images/SliderView.png)
 
 ## Attribution
 
