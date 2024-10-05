@@ -1,21 +1,48 @@
-# src/SonarCTL/widgets/config_widget.py
 import os
 import json
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QComboBox, QFileDialog, QLineEdit
 from PySide6.QtCore import Qt, QStandardPaths
-from importlib_metadata.diagnose import inspect
+
+import os
+import json
+from PySide6.QtCore import QStandardPaths
+
+
+class Configuration:
+    CONFIG_FILE = os.path.join(QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppLocalDataLocation),
+                               "SonarCTL", "config.json")
+
+    def __init__(self):
+        self.config_data = {}
+        self.load_raw_config()
+
+    def save_config(self):
+        os.makedirs(os.path.dirname(self.CONFIG_FILE), exist_ok=True)
+        with open(self.CONFIG_FILE, 'w', encoding='utf-8') as f:
+            json.dump(self.config_data, f)
+
+    def load_raw_config(self):
+        if os.path.exists(self.CONFIG_FILE):
+            with open(self.CONFIG_FILE, 'r') as f:
+                self.config_data = json.load(f)
+
+    def get(self, key, default=None):
+        return self.config_data.get(key, default)
+
+    def set(self, key, value):
+        self.config_data[key] = value
+        self.save_config()
 
 
 class ConfigWidget(QWidget):
     DEFAULT_PATH = "C:\\ProgramData\\SteelSeries\\SteelSeries Engine 3\\coreProps.json"
-    CONFIG_FILE = os.path.join(QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppLocalDataLocation),
-                               "SonarCTL", "config.json")
 
-    def __init__(self, main_window):
+    def __init__(self, main_window, configuration):
         super().__init__()
         self.main_window = main_window
+        self.configuration = configuration
         self.init_ui()
-        self.load_config()
+        self.load_values_to_ui()
 
     def init_ui(self):
         main_layout = QVBoxLayout()
@@ -54,7 +81,7 @@ class ConfigWidget(QWidget):
 
     def setup_channel_selectors(self, layout):
         self.channels_layout = QVBoxLayout()
-        self.channels = ["Game", "Chat", "Media", "Mic", "Chat Mix", "None"]
+        self.channels = ["Game", "Chat", "Media", "Mic", "Chat Mix", "Master", "None"]
         self.channel_selectors = []
         self.toggle_buttons = []
 
@@ -128,9 +155,11 @@ class ConfigWidget(QWidget):
         self.update_slider_labels()
 
     def update_sonar_midi_listener_channels(self):
-        if hasattr(self, 'sonar_midi_listener'):
-            self.sonar_midi_listener.channel_mappings = {f"channel_{i + 1}": selector.currentText() for i, selector in
-                                                         enumerate(self.channel_selectors)}
+        if hasattr(self.main_window, 'sonar_midi_listener'):
+            self.main_window.sonar_midi_listener.channel_mappings = {
+                f"channel_{i + 1}": selector.currentText() for i, selector in enumerate(self.channel_selectors)
+            }
+            print(self.main_window.sonar_midi_listener.channel_mappings)
 
     def update_slider_labels(self):
         labels = [selector.currentText() for selector in self.channel_selectors]
@@ -139,21 +168,16 @@ class ConfigWidget(QWidget):
     def save_config(self):
         config = {
             "channels": [selector.currentText() for selector in self.channel_selectors],
-            "toggle_states": [button.text() for button in self.toggle_buttons]
+            "toggle_states": [button.text() for button in self.toggle_buttons],
         }
-        os.makedirs(os.path.dirname(self.CONFIG_FILE), exist_ok=True)
-        with open(self.CONFIG_FILE, 'w', encoding='utf-8') as f:
-            json.dump(config, f)
+        self.configuration.set("config_data", config)
 
-    def load_config(self):
-        if os.path.exists(self.CONFIG_FILE):
-            with open(self.CONFIG_FILE, 'r') as f:
-                config = json.load(f)
-                for button, state in zip(self.toggle_buttons, config.get("toggle_states", [])):
-                    button.setText(state)
-                for selector, value in zip(self.channel_selectors, config.get("channels", [])):
-                    selector.setCurrentText(value)
-            self.update_slider_labels()
+    def load_values_to_ui(self):
+        config = self.configuration.get("config_data", {})
+        for button, state in zip(self.toggle_buttons, config.get("toggle_states", [])):
+            button.setText(state)
+        for selector, value in zip(self.channel_selectors, config.get("channels", [])):
+            selector.setCurrentText(value)
 
     def get_channel_mappings(self):
         return {f"channel_{i + 1}": selector.currentText() for i, selector in enumerate(self.channel_selectors)}

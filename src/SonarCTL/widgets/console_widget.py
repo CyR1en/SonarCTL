@@ -1,4 +1,3 @@
-# src/SonarCTL/widgets/console_widget.py
 from PySide6.QtCore import Qt, QMetaObject, Q_ARG
 from PySide6.QtGui import QTextCursor
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QTextEdit

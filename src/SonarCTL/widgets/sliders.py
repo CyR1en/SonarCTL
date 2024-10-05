@@ -1,8 +1,12 @@
-# src/SonarCTL/widgets/sliders.py
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QSlider
 from PySide6.QtCore import Qt
 
+
 class SliderWidget(QWidget):
+    slider_colors = ['rgba(2, 221, 183, 0.5)', 'rgba(45, 172, 239, 0.5)',
+                     'rgba(110, 54, 159, 0.5)', 'rgba(139, 81, 244, 0.5)',
+                     'rgba(250, 166, 48, 0.5)']
+
     def __init__(self):
         super().__init__()
         self.init_ui()
@@ -23,7 +27,7 @@ class SliderWidget(QWidget):
         sliders_layout.setSpacing(10)  # Reduce spacing
         self.sliders = []
 
-        for i in range(1, 6):
+        for i, color in enumerate(self.slider_colors, start=1):
             slider_layout = QVBoxLayout()
             slider_layout.setContentsMargins(0, 0, 0, 0)
             slider_layout.setSpacing(5)
@@ -33,6 +37,21 @@ class SliderWidget(QWidget):
             slider.setValue(50)
             slider.setFocusPolicy(Qt.FocusPolicy.NoFocus)
             slider.setEnabled(False)  # Disable user interaction
+
+            slider.setStyleSheet(f"""
+                QSlider::handle:vertical {{
+                    background: rgba(255, 255, 255, 0.5); /* semi-transparent color */
+                    height: 20px;
+                    margin: 0 -5px; /* handle is placed by default on the contents rect of the groove */
+                    border: 1px solid #000000; /* small dark line in the middle */
+                }}
+                QSlider::add-page:vertical {{
+                    background: {color};
+                }}
+                QSlider::sub-page:vertical {{
+                    background: {color};
+                }}
+            """)
 
             label = QLabel(f"C{i}")
             label.setAlignment(Qt.AlignmentFlag.AlignCenter)

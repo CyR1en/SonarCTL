@@ -1,4 +1,3 @@
-# src/SonarCTL/widgets/status_bar.py
 from PySide6.QtWidgets import QWidget, QLabel, QHBoxLayout
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPainter, QColor
@@ -28,19 +27,23 @@ class StatusBar(QWidget):
         self.init_ui()
 
     def init_ui(self):
-        layout = QHBoxLayout()
+        self.layout = QHBoxLayout()
         self.status_label = QLabel("SonarCTL MIDI Not Connected")
+        self.status_label.setStyleSheet("color: #616978;")
         self.status_dot = StatusDot()
-        layout.addWidget(self.status_label)
-        layout.addWidget(self.status_dot)
-        layout.addStretch()
-        self.setLayout(layout)
+        self.layout.addWidget(self.status_label)
+        self.layout.addWidget(self.status_dot)
+        self.layout.addStretch()
+        self.setLayout(self.layout)
         self.setFixedHeight(30)  # Set the fixed height to make the status bar thinner
+
 
     def set_connected(self, connected):
         self.status_dot.set_connected(connected)
         if connected:
             self.status_label.setText("SonarCTL MIDI Connected")
+            self.layout.setContentsMargins(0, 0, 0, 10)
         else:
             self.status_label.setText("SonarCTL MIDI Not Connected")
+            self.layout.setContentsMargins(0, 0, 10, 10)
         self.update()  # Ensure the UI is updated

@@ -1,4 +1,3 @@
-# src/SonarCTL/widgets/sidebar.py
 import os
 
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton
